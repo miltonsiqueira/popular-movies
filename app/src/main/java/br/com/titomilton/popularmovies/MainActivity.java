@@ -6,6 +6,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,6 +18,10 @@ import java.net.URL;
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 
+// TODO show poster (picasso library)
+// TODO page list
+// TODO detail
+
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -23,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
     private MoviesAdapter mMoviesAdapter;
+    private TextView mOrderDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies);
 
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+
+        mOrderDescription = (TextView) findViewById(R.id.tv_order_description);
 
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -46,12 +56,21 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        loadMoviesData();
+        loadMoviesData(NetworkUtils.TpMovieList.POPULAR);
     }
 
-    private void loadMoviesData() {
+    private void loadMoviesData(NetworkUtils.TpMovieList tpMovieList) {
+        adjustOrderDescription(tpMovieList);
         showMoviesDataView();
-        new FetchMoviesTask().execute();
+        new FetchMoviesTask().execute(tpMovieList);
+    }
+
+    private void adjustOrderDescription(NetworkUtils.TpMovieList tpMovieList) {
+        mOrderDescription.setText(
+                tpMovieList.equals(NetworkUtils.TpMovieList.POPULAR) ?
+                        R.string.by_most_popular :
+                        R.string.by_top_rated
+        );
     }
 
     private void showMoviesDataView() {
@@ -73,7 +92,36 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 //        startActivity(intentToStartDetailActivity);
     }
 
-    public class FetchMoviesTask extends AsyncTask<Void, Void, String[]> {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.list_movies, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final NetworkUtils.TpMovieList tpMovieList;
+
+        switch (item.getItemId()) {
+            case R.id.action_most_popular:
+                tpMovieList = NetworkUtils.TpMovieList.POPULAR;
+                break;
+            case R.id.action_by_top_rated:
+                tpMovieList = NetworkUtils.TpMovieList.TOP_RATED;
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+
+        loadMoviesData(tpMovieList);
+
+        return true;
+
+    }
+
+    public class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, String[]> {
 
         @Override
         protected void onPreExecute() {
@@ -82,9 +130,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         }
 
         @Override
-        protected String[] doInBackground(Void... params) {
-
-            URL moviesRequestUrl = NetworkUtils.buildUrl();
+        protected String[] doInBackground(NetworkUtils.TpMovieList... params) {
+            NetworkUtils.TpMovieList tpMovieList = params[0];
+            URL moviesRequestUrl = NetworkUtils.buildUrl(tpMovieList);
 
             String jsonMoviesResponse = null;
             try {

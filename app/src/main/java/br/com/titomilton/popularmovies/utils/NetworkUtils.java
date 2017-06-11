@@ -18,12 +18,20 @@ public final class NetworkUtils {
 
     private static final String API_KEY = BuildConfig.THE_MOVIE_DB_API_KEY;
     private static String MOVIE_BASE_URL = "https://api.themoviedb.org/3";
-    private static String POPULAR_MOVIES_BASE_URL = MOVIE_BASE_URL + "/movie/popular";
     private static String API_KEY_PARAM = "api_key";
 
+    public enum TpMovieList {
+        POPULAR(MOVIE_BASE_URL + "/movie/popular"),
+        TOP_RATED(MOVIE_BASE_URL + "/movie/top_rated");
+        private final String url;
 
-    public static URL buildUrl() {
-        Uri builtUri = Uri.parse(POPULAR_MOVIES_BASE_URL).buildUpon()
+        TpMovieList(String url) {
+            this.url = url;
+        }
+    }
+
+    public static URL buildUrl(TpMovieList tpMovieList) {
+        Uri builtUri = Uri.parse(tpMovieList.url).buildUpon()
                 .appendQueryParameter(API_KEY_PARAM, API_KEY)
                 .build();
 
