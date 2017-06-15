@@ -18,7 +18,6 @@ import java.net.URL;
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 
-// TODO show poster (picasso library)
 // TODO page list
 // TODO detail
 
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     @Override
-    public void onClick(String movie) {
+    public void onClick(Movie movie) {
 //        Context context = this;
 //        Class destinationClass = DetailActivity.class;
 //        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
@@ -121,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     }
 
-    public class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, String[]> {
+    public class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, Movie[]> {
 
         @Override
         protected void onPreExecute() {
@@ -130,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         }
 
         @Override
-        protected String[] doInBackground(NetworkUtils.TpMovieList... params) {
+        protected Movie[] doInBackground(NetworkUtils.TpMovieList... params) {
             NetworkUtils.TpMovieList tpMovieList = params[0];
             URL moviesRequestUrl = NetworkUtils.buildUrl(tpMovieList);
 
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                 jsonMoviesResponse = NetworkUtils
                         .getResponseFromHttpUrl(moviesRequestUrl);
 
-                String[] simpleJsonMoviesData = TheMovieDBJsonUtils
+                Movie[] simpleJsonMoviesData = TheMovieDBJsonUtils
                         .getMoviesStringsFromJson(jsonMoviesResponse);
 
                 return simpleJsonMoviesData;
@@ -152,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         }
 
         @Override
-        protected void onPostExecute(String[] moviesData) {
+        protected void onPostExecute(Movie[] moviesData) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (moviesData != null) {
                 showMoviesDataView();

@@ -5,14 +5,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import br.com.titomilton.popularmovies.Movie;
+
 public final class TheMovieDBJsonUtils {
     private static final String TAG = TheMovieDBJsonUtils.class.getSimpleName();
     private static final String JSON_STATUS_MESSAGE = "status_message";
     private static final String JSON_RESULTS = "results";
     private static final String JSON_TITLE = "title";
+    private static final String JSON_POSTER_PATH = "poster_path";
 
-    public static String[] getMoviesStringsFromJson(String jsonMoviesResponse) throws JSONException {
-            String[] parsedMoviesData;
+    public static Movie[] getMoviesStringsFromJson(String jsonMoviesResponse) throws JSONException {
+            Movie[] parsedMoviesData;
 
             JSONObject jsonMovies = new JSONObject(jsonMoviesResponse);
             if (jsonMovies.has(JSON_STATUS_MESSAGE)) {
@@ -22,12 +25,16 @@ public final class TheMovieDBJsonUtils {
 
             JSONArray jsonResults = jsonMovies.getJSONArray(JSON_RESULTS);
             int totalResults = jsonResults.length();
-            parsedMoviesData = new String[totalResults];
+            parsedMoviesData = new Movie[totalResults];
 
             for (int i = 0; i < totalResults; i++) {
                 JSONObject item = jsonResults.getJSONObject(i);
                 String title = item.getString(JSON_TITLE);
-                parsedMoviesData[i] = title;
+                String posterPath = new StringBuilder()
+                        .append(NetworkUtils.MOVIE_IMAGE_WITH_SIZE_BASE_URL)
+                        .append(item.getString(JSON_POSTER_PATH))
+                        .toString();
+                parsedMoviesData[i] = new Movie(title, posterPath);
             }
 
             return parsedMoviesData;

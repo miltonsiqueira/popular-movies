@@ -20,6 +20,10 @@ public final class NetworkUtils {
     private static String MOVIE_BASE_URL = "https://api.themoviedb.org/3";
     private static String API_KEY_PARAM = "api_key";
 
+    private static String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
+    private static String IMAGE_SIZE_PATH = "w185";
+    public static String MOVIE_IMAGE_WITH_SIZE_BASE_URL = "http://image.tmdb.org/t/p/" + IMAGE_SIZE_PATH;
+
     public enum TpMovieList {
         POPULAR(MOVIE_BASE_URL + "/movie/popular"),
         TOP_RATED(MOVIE_BASE_URL + "/movie/top_rated");
