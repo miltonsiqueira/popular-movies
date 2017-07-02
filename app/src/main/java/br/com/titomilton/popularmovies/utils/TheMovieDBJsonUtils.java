@@ -12,6 +12,9 @@ public final class TheMovieDBJsonUtils {
     private static final String JSON_STATUS_MESSAGE = "status_message";
     private static final String JSON_RESULTS = "results";
     private static final String JSON_TITLE = "title";
+    private static final String JSON_VOTE_AVERAGE = "vote_average";
+    private static final String JSON_SYNOPSIS = "overview";
+    private static final String JSON_RELEASE_DATE = "release_date";
     private static final String JSON_POSTER_PATH = "poster_path";
 
     public static Movie[] getMoviesStringsFromJson(String jsonMoviesResponse) throws JSONException {
@@ -34,7 +37,10 @@ public final class TheMovieDBJsonUtils {
                         .append(NetworkUtils.MOVIE_IMAGE_WITH_SIZE_BASE_URL)
                         .append(item.getString(JSON_POSTER_PATH))
                         .toString();
-                parsedMoviesData[i] = new Movie(title, posterPath);
+                String voteAverage = item.getString(JSON_VOTE_AVERAGE);
+                String releaseDate = item.getString(JSON_RELEASE_DATE);
+                String synopsis = item.getString(JSON_SYNOPSIS);
+                parsedMoviesData[i] = new Movie(title, releaseDate, voteAverage, synopsis, posterPath);
             }
 
             return parsedMoviesData;

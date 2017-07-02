@@ -1,5 +1,7 @@
 package br.com.titomilton.popularmovies;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,8 +20,8 @@ import java.net.URL;
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 
+// TODO detail - Movie details layout contains title, release date, movie poster, vote average, and plot synopsis.
 // TODO page list
-// TODO detail
 
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
@@ -84,11 +86,11 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     public void onClick(Movie movie) {
-//        Context context = this;
-//        Class destinationClass = DetailActivity.class;
-//        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-//        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, movie);
-//        startActivity(intentToStartDetailActivity);
+        Context context = this;
+        Class destinationClass = DetailActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra (Intent.EXTRA_TEXT, movie);
+        startActivity(intentToStartDetailActivity);
     }
 
     @Override
