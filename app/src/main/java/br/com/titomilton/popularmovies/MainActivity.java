@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_movies);
 
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 

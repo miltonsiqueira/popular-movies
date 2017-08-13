@@ -1,5 +1,5 @@
 # Popular Movies
-Android app that lists movies by most popular or by highest-rated from [themoviedb](http://themoviedb.org).
+Android app that lists movies by most popular or by highest-rated from [The Movie DB](http://themoviedb.org).
 It is one of the projects requested by Android Nanodegree program (Popular Movies Stage 1).
 
 ## API Key
