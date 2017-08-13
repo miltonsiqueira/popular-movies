@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import br.com.titomilton.popularmovies.Movie;
 
 public final class TheMovieDBJsonUtils {
-    private static final String TAG = TheMovieDBJsonUtils.class.getSimpleName();
     private static final String JSON_STATUS_MESSAGE = "status_message";
     private static final String JSON_RESULTS = "results";
     private static final String JSON_TITLE = "title";
@@ -33,10 +32,8 @@ public final class TheMovieDBJsonUtils {
             for (int i = 0; i < totalResults; i++) {
                 JSONObject item = jsonResults.getJSONObject(i);
                 String title = item.getString(JSON_TITLE);
-                String posterPath = new StringBuilder()
-                        .append(NetworkUtils.MOVIE_IMAGE_WITH_SIZE_BASE_URL)
-                        .append(item.getString(JSON_POSTER_PATH))
-                        .toString();
+                String posterPath = NetworkUtils.MOVIE_IMAGE_WITH_SIZE_BASE_URL +
+                        item.getString(JSON_POSTER_PATH);
                 String voteAverage = item.getString(JSON_VOTE_AVERAGE);
                 String releaseDate = item.getString(JSON_RELEASE_DATE);
                 String synopsis = item.getString(JSON_SYNOPSIS);

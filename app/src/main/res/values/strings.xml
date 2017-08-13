@@ -3,4 +3,5 @@
     <string name="error_message">An error has occurred. Please try again.</string>
     <string name="by_most_popular">By Most Popular</string>
     <string name="by_top_rated">By Top Rated</string>
+    <string name="movie_poster">Movie Poster</string>
 </resources>

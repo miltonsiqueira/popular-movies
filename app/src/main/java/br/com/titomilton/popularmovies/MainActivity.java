@@ -20,9 +20,6 @@ import java.net.URL;
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 
-// TODO detail - Movie details layout contains title, release date, movie poster, vote average, and plot synopsis.
-// TODO page list
-
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -122,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     }
 
-    public class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, Movie[]> {
+    private class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, Movie[]> {
 
         @Override
         protected void onPreExecute() {
@@ -140,10 +137,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                 jsonMoviesResponse = NetworkUtils
                         .getResponseFromHttpUrl(moviesRequestUrl);
 
-                Movie[] simpleJsonMoviesData = TheMovieDBJsonUtils
+                return TheMovieDBJsonUtils
                         .getMoviesStringsFromJson(jsonMoviesResponse);
 
-                return simpleJsonMoviesData;
 
             } catch (Exception e) {
                 e.printStackTrace();

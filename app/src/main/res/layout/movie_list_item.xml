@@ -12,7 +12,8 @@
         <ImageView
             android:id="@+id/iv_poster"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/movie_poster"/>
 
         <TextView
             android:id="@+id/tv_movie_data"

@@ -17,12 +17,10 @@ public final class NetworkUtils {
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
     private static final String API_KEY = BuildConfig.THE_MOVIE_DB_API_KEY;
-    private static String MOVIE_BASE_URL = "https://api.themoviedb.org/3";
-    private static String API_KEY_PARAM = "api_key";
+    private static final String MOVIE_BASE_URL = "https://api.themoviedb.org/3";
 
-    private static String MOVIE_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/";
-    private static String IMAGE_SIZE_PATH = "w185";
-    public static String MOVIE_IMAGE_WITH_SIZE_BASE_URL = "http://image.tmdb.org/t/p/" + IMAGE_SIZE_PATH;
+    private static final String IMAGE_SIZE_PATH = "w185";
+    public static final String MOVIE_IMAGE_WITH_SIZE_BASE_URL = "http://image.tmdb.org/t/p/" + IMAGE_SIZE_PATH;
 
     public enum TpMovieList {
         POPULAR(MOVIE_BASE_URL + "/movie/popular"),
@@ -35,6 +33,7 @@ public final class NetworkUtils {
     }
 
     public static URL buildUrl(TpMovieList tpMovieList) {
+        final String API_KEY_PARAM = "api_key";
         Uri builtUri = Uri.parse(tpMovieList.url).buildUpon()
                 .appendQueryParameter(API_KEY_PARAM, API_KEY)
                 .build();

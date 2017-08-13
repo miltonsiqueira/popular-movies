@@ -21,7 +21,7 @@ public class Movie implements Parcelable
         this.posterUrl = posterUrl;
     }
 
-    protected Movie(Parcel in) {
+    private Movie(Parcel in) {
         readFromParcel(in);
 
     }

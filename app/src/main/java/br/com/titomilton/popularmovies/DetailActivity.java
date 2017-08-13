@@ -6,19 +6,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 public class DetailActivity extends AppCompatActivity {
 
-    private Movie mMovie;
-    private TextView mTitleTextView;
-    private TextView mReleaseDateTextView;
-    private TextView mVoteAverageTextView;
-    private TextView mSynopsis;
-    private ImageView mPoster;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        Movie mMovie;
+        TextView mTitleTextView;
+        TextView mReleaseDateTextView;
+        TextView mVoteAverageTextView;
+        TextView mSynopsis;
+        ImageView mPoster;
 
         mTitleTextView = (TextView) findViewById(R.id.tv_title_detail);
         mReleaseDateTextView = (TextView) findViewById(R.id.tv_release_date_detail);
@@ -35,7 +38,9 @@ public class DetailActivity extends AppCompatActivity {
                 mReleaseDateTextView.setText(mMovie.getReleaseDate());
                 mVoteAverageTextView.setText(mMovie.getVoteAverage());
                 mSynopsis.setText(mMovie.getSynopsis());
-                //mPoster.setImage(mMovie.getSynopsis());
+                Picasso.with(this)
+                        .load(mMovie.getPosterUrl())
+                        .into(mPoster);
             }
         }
     }
