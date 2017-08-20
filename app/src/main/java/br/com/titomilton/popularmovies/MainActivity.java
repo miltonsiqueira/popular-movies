@@ -2,11 +2,13 @@ package br.com.titomilton.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,6 +25,8 @@ import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 2;
+    private static final int GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE = GRID_SPAN_COUNT_ORIENTATION_PORTRAIT * 2;
 
     private RecyclerView mRecyclerView;
     private TextView mErrorMessageDisplay;
@@ -35,13 +39,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movies);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_movies);
+        mRecyclerView = findViewById(R.id.recycler_view_movies);
 
-        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+        mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
 
-        mOrderDescription = (TextView) findViewById(R.id.tv_order_description);
+        mOrderDescription = findViewById(R.id.tv_order_description);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 1);
+        StaggeredGridLayoutManager layoutManager = createStaggeredGridLayoutManager();
 
         mRecyclerView.setLayoutManager(layoutManager);
 
@@ -51,9 +55,20 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mRecyclerView.setAdapter(mMoviesAdapter);
 
-        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         loadMoviesData(NetworkUtils.TpMovieList.POPULAR);
+    }
+
+    @NonNull
+    private StaggeredGridLayoutManager createStaggeredGridLayoutManager() {
+        StaggeredGridLayoutManager layoutManager;
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_PORTRAIT, StaggeredGridLayoutManager.VERTICAL);
+        } else {
+            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE, StaggeredGridLayoutManager.VERTICAL);
+        }
+        return layoutManager;
     }
 
     private void loadMoviesData(NetworkUtils.TpMovieList tpMovieList) {
