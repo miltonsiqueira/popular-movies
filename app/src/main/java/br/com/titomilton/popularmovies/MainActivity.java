@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,12 +16,20 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import br.com.titomilton.popularmovies.utils.NetworkUtils;
+import br.com.titomilton.popularmovies.utils.TheMovieDBAPI;
+import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
+import br.com.titomilton.popularmovies.utils.TpMovieList;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler, AsyncTaskListener<Movie[]>  {
+public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler{
 
     private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 2;
     private static final int GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE = GRID_SPAN_COUNT_ORIENTATION_PORTRAIT * 2;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView mRecyclerView;
     private TextView mErrorMessageDisplay;
@@ -51,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadMoviesData(NetworkUtils.TpMovieList.POPULAR);
+        loadMoviesData(TpMovieList.POPULAR);
     }
 
     @NonNull
@@ -65,15 +74,46 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         return layoutManager;
     }
 
-    private void loadMoviesData(NetworkUtils.TpMovieList tpMovieList) {
+    private void loadMoviesData(TpMovieList tpMovieList) {
         adjustOrderDescription(tpMovieList);
         showMoviesDataView();
-        new FetchMoviesTask(this).execute(tpMovieList);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(TheMovieDBAPI.BASE_URL)
+                .build();
+        TheMovieDBAPI theMovieDBAPI = retrofit.create(TheMovieDBAPI.class);
+
+        Call<ResponseBody> call = tpMovieList.endpoint(theMovieDBAPI);
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Movie[] movies = null;
+                if (response.isSuccessful()) {
+                    try {
+                        String json = response.body().string();
+                        movies = TheMovieDBJsonUtils
+                                .getMoviesStringsFromJson(json);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+                }
+                onPostExecute(movies);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                onPostExecute(null);
+            }
+        });
+
+
+        //new FetchMoviesTask(this).execute(tpMovieList);
     }
 
-    private void adjustOrderDescription(NetworkUtils.TpMovieList tpMovieList) {
+    private void adjustOrderDescription(TpMovieList tpMovieList) {
         mOrderDescription.setText(
-                tpMovieList.equals(NetworkUtils.TpMovieList.POPULAR) ?
+                tpMovieList.equals(TpMovieList.POPULAR) ?
                         R.string.by_most_popular :
                         R.string.by_top_rated
         );
@@ -107,14 +147,14 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        final NetworkUtils.TpMovieList tpMovieList;
+        final TpMovieList tpMovieList;
 
         switch (item.getItemId()) {
             case R.id.action_most_popular:
-                tpMovieList = NetworkUtils.TpMovieList.POPULAR;
+                tpMovieList = TpMovieList.POPULAR;
                 break;
             case R.id.action_by_top_rated:
-                tpMovieList = NetworkUtils.TpMovieList.TOP_RATED;
+                tpMovieList = TpMovieList.TOP_RATED;
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -127,14 +167,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     }
 
-
-    @Override
-    public void onPreExecute() {
-        mLoadingIndicator.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onPostExecute(Movie[] moviesData) {
+    private void onPostExecute(Movie[] moviesData) {
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (moviesData != null) {
             showMoviesDataView();

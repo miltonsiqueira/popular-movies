@@ -32,7 +32,7 @@ public final class TheMovieDBJsonUtils {
             for (int i = 0; i < totalResults; i++) {
                 JSONObject item = jsonResults.getJSONObject(i);
                 String title = item.getString(JSON_TITLE);
-                String posterPath = NetworkUtils.MOVIE_IMAGE_WITH_SIZE_BASE_URL +
+                String posterPath = TheMovieDBAPI.MOVIE_IMAGE_WITH_SIZE_BASE_URL +
                         item.getString(JSON_POSTER_PATH);
                 String voteAverage = item.getString(JSON_VOTE_AVERAGE);
                 String releaseDate = item.getString(JSON_RELEASE_DATE);
