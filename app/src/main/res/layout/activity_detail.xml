@@ -6,7 +6,7 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_width="match_parent"
-                  android:layout_height="match_parent"
+                  android:layout_height="wrap_content"
                   android:orientation="vertical">
 
         <ImageView
@@ -18,7 +18,8 @@
         <TextView
             android:id="@+id/tv_title_detail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textSize="20sp"/>
 
         <TextView
             android:id="@+id/tv_release_date_detail"
@@ -33,7 +34,8 @@
         <TextView
             android:id="@+id/tv_plot_synopsis"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textSize="20sp"/>
 
     </LinearLayout>
 </ScrollView>

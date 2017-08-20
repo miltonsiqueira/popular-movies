@@ -3,13 +3,11 @@ package br.com.titomilton.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,14 +15,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.net.URL;
-
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
-import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler, AsyncTaskListener<Movie[]>  {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
     private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 2;
     private static final int GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE = GRID_SPAN_COUNT_ORIENTATION_PORTRAIT * 2;
 
@@ -74,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     private void loadMoviesData(NetworkUtils.TpMovieList tpMovieList) {
         adjustOrderDescription(tpMovieList);
         showMoviesDataView();
-        new FetchMoviesTask().execute(tpMovieList);
+        new FetchMoviesTask(this).execute(tpMovieList);
     }
 
     private void adjustOrderDescription(NetworkUtils.TpMovieList tpMovieList) {
@@ -133,44 +127,20 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     }
 
-    private class FetchMoviesTask extends AsyncTask<NetworkUtils.TpMovieList, Void, Movie[]> {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
+    @Override
+    public void onPreExecute() {
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
 
-        @Override
-        protected Movie[] doInBackground(NetworkUtils.TpMovieList... params) {
-            NetworkUtils.TpMovieList tpMovieList = params[0];
-            URL moviesRequestUrl = NetworkUtils.buildUrl(tpMovieList);
-
-            String jsonMoviesResponse = null;
-            try {
-                jsonMoviesResponse = NetworkUtils
-                        .getResponseFromHttpUrl(moviesRequestUrl);
-
-                return TheMovieDBJsonUtils
-                        .getMoviesStringsFromJson(jsonMoviesResponse);
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, e.getMessage() + " json:" + jsonMoviesResponse);
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] moviesData) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (moviesData != null) {
-                showMoviesDataView();
-                mMoviesAdapter.setMoviesData(moviesData);
-            } else {
-                showErrorMessage();
-            }
+    @Override
+    public void onPostExecute(Movie[] moviesData) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (moviesData != null) {
+            showMoviesDataView();
+            mMoviesAdapter.setMoviesData(moviesData);
+        } else {
+            showErrorMessage();
         }
     }
 

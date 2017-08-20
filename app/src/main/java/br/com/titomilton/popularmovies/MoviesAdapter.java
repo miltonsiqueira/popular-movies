@@ -38,8 +38,8 @@ class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieAdapterViewH
 
         public MovieAdapterViewHolder(View view) {
             super(view);
-            mMovieTextView = (TextView) view.findViewById(R.id.tv_movie_data);
-            mImageView = (ImageView) view.findViewById(R.id.iv_poster);
+            mMovieTextView = view.findViewById(R.id.tv_movie_data);
+            mImageView = view.findViewById(R.id.iv_poster);
             mContext = view.getContext();
             view.setOnClickListener(this);
         }

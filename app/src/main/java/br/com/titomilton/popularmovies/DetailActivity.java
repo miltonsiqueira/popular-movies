@@ -23,11 +23,11 @@ public class DetailActivity extends AppCompatActivity {
         TextView mSynopsis;
         ImageView mPoster;
 
-        mTitleTextView = (TextView) findViewById(R.id.tv_title_detail);
-        mReleaseDateTextView = (TextView) findViewById(R.id.tv_release_date_detail);
-        mVoteAverageTextView = (TextView) findViewById(R.id.tv_vote_average);
-        mSynopsis= (TextView) findViewById(R.id.tv_plot_synopsis);
-        mPoster= (ImageView) findViewById(R.id.iv_poster_detail);
+        mTitleTextView = findViewById(R.id.tv_title_detail);
+        mReleaseDateTextView = findViewById(R.id.tv_release_date_detail);
+        mVoteAverageTextView = findViewById(R.id.tv_vote_average);
+        mSynopsis= findViewById(R.id.tv_plot_synopsis);
+        mPoster= findViewById(R.id.iv_poster_detail);
 
         Intent intentThatStartedThisActivity = getIntent();
 
