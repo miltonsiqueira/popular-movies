@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBAPI;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 import br.com.titomilton.popularmovies.utils.TpMovieList;
@@ -60,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadMoviesData(TpMovieList.POPULAR);
+        loadMoviesDataCheckIfConnected(TpMovieList.POPULAR);
     }
 
     @NonNull
@@ -74,9 +75,19 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         return layoutManager;
     }
 
+    private void loadMoviesDataCheckIfConnected (TpMovieList tpMovieList) {
+
+        if (NetworkUtils.isConnected(this)) {
+            loadMoviesData(tpMovieList);
+        } else {
+            showErrorMessageNoInternet();
+        }
+    }
+
     private void loadMoviesData(TpMovieList tpMovieList) {
         adjustOrderDescription(tpMovieList);
         showMoviesDataView();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(TheMovieDBAPI.BASE_URL)
                 .build();
@@ -107,8 +118,6 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             }
         });
 
-
-        //new FetchMoviesTask(this).execute(tpMovieList);
     }
 
     private void adjustOrderDescription(TpMovieList tpMovieList) {
@@ -124,8 +133,17 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
+    private void showErrorMessageNoInternet() {
+        showErrorMessage(R.string.error_message_no_internet);
+    }
+
     private void showErrorMessage() {
+        showErrorMessage(R.string.error_message);
+    }
+
+    private void showErrorMessage(int resStringId) {
         mRecyclerView.setVisibility(View.GONE);
+        mErrorMessageDisplay.setText(resStringId);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
@@ -161,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         }
 
-        loadMoviesData(tpMovieList);
+        loadMoviesDataCheckIfConnected(tpMovieList);
 
         return true;
 

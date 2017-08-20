@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Popular Movies</string>
-    <string name="error_message">An error has occurred. Please try again.</string>
+    <string name="error_message">An error has occurred.</string>
+    <string name="error_message_no_internet">No internet connection available.</string>
     <string name="by_most_popular">By Most Popular</string>
     <string name="by_top_rated">By Top Rated</string>
     <string name="movie_poster">Movie Poster</string>
