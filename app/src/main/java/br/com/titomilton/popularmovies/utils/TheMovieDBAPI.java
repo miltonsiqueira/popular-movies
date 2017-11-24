@@ -5,6 +5,7 @@ import br.com.titomilton.popularmovies.BuildConfig;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 
 public interface TheMovieDBAPI {
     String BASE_URL = "https://api.themoviedb.org/3/";
@@ -18,5 +19,7 @@ public interface TheMovieDBAPI {
     @GET("movie/top_rated?" + API_KEY_PARAM_VALUE)
     Call<ResponseBody> getTopRatedMovies();
 
+    @GET("movie/{id}/videos?" + API_KEY_PARAM_VALUE)
+    Call<ResponseBody> getTrailers(@Path("id") int id);
 
 }
