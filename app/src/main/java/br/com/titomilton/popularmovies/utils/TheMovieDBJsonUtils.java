@@ -10,6 +10,7 @@ import br.com.titomilton.popularmovies.Trailer;
 
 public final class TheMovieDBJsonUtils {
     private static final String JSON_STATUS_MESSAGE = "status_message";
+    private static final String JSON_ID = "id";
     private static final String JSON_RESULTS = "results";
     private static final String JSON_TITLE = "title";
     private static final String JSON_VOTE_AVERAGE = "vote_average";
@@ -17,9 +18,14 @@ public final class TheMovieDBJsonUtils {
     private static final String JSON_RELEASE_DATE = "release_date";
     private static final String JSON_POSTER_PATH = "poster_path";
 
+    private static final String JSON_TRAILER_VIDEOS = "videos";
     private static final String JSON_TRAILER_RESULTS = "results";
     private static final String JSON_TRAILER_YOUTUBE_ID = "key";
     private static final String JSON_TRAILER_NAME = "name";
+
+    private static final String JSON_MOVIE_DURATION = "runtime";
+
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
 
     public static Movie[] getMoviesStringsFromJson(String jsonMoviesResponse) throws JSONException {
         Movie[] parsedMoviesData;
@@ -40,7 +46,8 @@ public final class TheMovieDBJsonUtils {
             String voteAverage = item.getString(JSON_VOTE_AVERAGE);
             String releaseDate = item.getString(JSON_RELEASE_DATE);
             String synopsis = item.getString(JSON_SYNOPSIS);
-            parsedMoviesData[i] = new Movie(title, releaseDate, voteAverage, synopsis, posterPath);
+            int id = item.getInt(JSON_ID);
+            parsedMoviesData[i] = new Movie(id, title, releaseDate, voteAverage, synopsis, posterPath);
         }
 
         return parsedMoviesData;
@@ -54,14 +61,14 @@ public final class TheMovieDBJsonUtils {
         }
     }
 
-    public Trailer[] getTrailers(String json) throws JSONException {
+    public static Trailer[] getTrailers(String json) throws JSONException {
         Trailer[] parsedTrailerData;
 
         JSONObject jsonObjRoot = new JSONObject(json);
 
         checkErrorResponce(jsonObjRoot);
-
-        JSONArray jsonResults = jsonObjRoot.getJSONArray(JSON_TRAILER_RESULTS);
+        JSONObject jsonVideos = jsonObjRoot.getJSONObject(JSON_TRAILER_VIDEOS);
+        JSONArray jsonResults = jsonVideos.getJSONArray(JSON_TRAILER_RESULTS);
         int totalResults = jsonResults.length();
         parsedTrailerData = new Trailer[totalResults];
 
@@ -73,6 +80,16 @@ public final class TheMovieDBJsonUtils {
         }
 
         return parsedTrailerData;
+    }
+
+    public static int getMovieDuration(String json) throws JSONException {
+        JSONObject jsonObjRoot = new JSONObject(json);
+
+        checkErrorResponce(jsonObjRoot);
+        int duration = jsonObjRoot.getInt(JSON_MOVIE_DURATION);
+
+        return duration;
+
     }
 
 }

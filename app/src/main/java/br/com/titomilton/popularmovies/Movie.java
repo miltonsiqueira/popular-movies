@@ -4,16 +4,18 @@ package br.com.titomilton.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-// Movie details layout contains title, release date, movie poster, vote average, and plot synopsis
-public class Movie implements Parcelable
-{
+public class Movie implements Parcelable {
+
+    private int id;
     private String title;
     private String releaseDate;
     private String voteAverage;
     private String synopsis;
     private String posterUrl;
+    private int duration;
 
-    public Movie(String title, String releaseDate, String voteAverage, String synopsis, String posterUrl) {
+    public Movie(int id, String title, String releaseDate, String voteAverage, String synopsis, String posterUrl) {
+        this.id = id;
         this.title = title;
         this.releaseDate = releaseDate;
         this.voteAverage = voteAverage;
@@ -54,19 +56,27 @@ public class Movie implements Parcelable
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
         parcel.writeString(title);
         parcel.writeString(releaseDate);
         parcel.writeString(voteAverage);
         parcel.writeString(synopsis);
         parcel.writeString(posterUrl);
+        parcel.writeInt(duration);
     }
 
     private void readFromParcel(Parcel in) {
+        id = in.readInt();
         title = in.readString();
         releaseDate = in.readString();
         voteAverage = in.readString();
         synopsis = in.readString();
         posterUrl = in.readString();
+        duration = in.readInt();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getReleaseDate() {
@@ -79,6 +89,14 @@ public class Movie implements Parcelable
 
     public String getSynopsis() {
         return synopsis;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }
 

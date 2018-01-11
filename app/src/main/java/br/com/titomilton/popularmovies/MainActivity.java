@@ -6,8 +6,8 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,9 +49,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mOrderDescription = findViewById(R.id.tv_order_description);
 
-        StaggeredGridLayoutManager layoutManager = createStaggeredGridLayoutManager();
-
-        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setLayoutManager(createGridLayoutManager());
 
         mRecyclerView.setHasFixedSize(true);
 
@@ -65,12 +63,12 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     @NonNull
-    private StaggeredGridLayoutManager createStaggeredGridLayoutManager() {
-        StaggeredGridLayoutManager layoutManager;
+    private GridLayoutManager createGridLayoutManager() {
+        GridLayoutManager layoutManager;
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_PORTRAIT, StaggeredGridLayoutManager.VERTICAL);
+            layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT_ORIENTATION_PORTRAIT);
         } else {
-            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE, StaggeredGridLayoutManager.VERTICAL);
+            layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE);
         }
         return layoutManager;
     }
