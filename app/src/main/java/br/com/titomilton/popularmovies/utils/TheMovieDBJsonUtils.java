@@ -1,6 +1,8 @@
 package br.com.titomilton.popularmovies.utils;
 
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,18 +42,30 @@ public final class TheMovieDBJsonUtils {
 
         for (int i = 0; i < totalResults; i++) {
             JSONObject item = jsonResults.getJSONObject(i);
-            String title = item.getString(JSON_TITLE);
-            String posterPath = TheMovieDBAPI.MOVIE_IMAGE_WITH_SIZE_BASE_URL +
-                    item.getString(JSON_POSTER_PATH);
-            String voteAverage = item.getString(JSON_VOTE_AVERAGE);
-            String releaseDate = item.getString(JSON_RELEASE_DATE);
-            String synopsis = item.getString(JSON_SYNOPSIS);
-            int id = item.getInt(JSON_ID);
-            parsedMoviesData[i] = new Movie(id, title, releaseDate, voteAverage, synopsis, posterPath);
+            Movie movie = getMovie(item);
+            parsedMoviesData[i] = movie;
         }
 
         return parsedMoviesData;
 
+    }
+
+    @NonNull
+    private static Movie getMovie(JSONObject item) throws JSONException {
+        String title = item.getString(JSON_TITLE);
+        String posterPath = TheMovieDBAPI.MOVIE_IMAGE_WITH_SIZE_BASE_URL +
+                item.getString(JSON_POSTER_PATH);
+        String voteAverage = item.getString(JSON_VOTE_AVERAGE);
+        String releaseDate = item.getString(JSON_RELEASE_DATE);
+        String synopsis = item.getString(JSON_SYNOPSIS);
+        int id = item.getInt(JSON_ID);
+
+        int duration = 0;
+        if (item.has(JSON_MOVIE_DURATION)) {
+            duration = item.getInt(JSON_MOVIE_DURATION);
+        }
+
+        return new Movie(id, title, releaseDate, voteAverage, synopsis, posterPath, duration);
     }
 
     private static void checkErrorResponce(JSONObject jsonMovies) throws JSONException {
@@ -82,13 +96,12 @@ public final class TheMovieDBJsonUtils {
         return parsedTrailerData;
     }
 
-    public static int getMovieDuration(String json) throws JSONException {
+    public static Movie getMovieDetail(String json) throws JSONException {
         JSONObject jsonObjRoot = new JSONObject(json);
 
         checkErrorResponce(jsonObjRoot);
-        int duration = jsonObjRoot.getInt(JSON_MOVIE_DURATION);
 
-        return duration;
+        return getMovie(jsonObjRoot);
 
     }
 
