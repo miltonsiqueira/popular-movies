@@ -38,10 +38,13 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     private ImageView mPoster;
     private View mMovieDetailsView;
     private Movie mMovie;
-    private RecyclerView mRecyclerView;
+    private RecyclerView mTrailersRecyclerView;
     private TrailersAdapter mTrailersAdapter;
     private ProgressBar mLoadingIndicator;
     private static final String YOUTUBE_URL_TEMPLATE = "http://www.youtube.com/watch?v=%s";
+    private ReviewsAdapter mReviewsAdapter;
+    private RecyclerView mReviewsRecyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,19 +59,22 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         mVoteAverageTextView = findViewById(R.id.tv_vote_average);
         mSynopsis = findViewById(R.id.tv_plot_synopsis);
         mPoster = findViewById(R.id.iv_poster_detail);
-        mRecyclerView = findViewById(R.id.recycler_view_trailers);
+        mTrailersRecyclerView = findViewById(R.id.recycler_view_trailers);
+        mReviewsRecyclerView = findViewById(R.id.recycler_view_reviews);
 
         mLoadingIndicator.setVisibility(View.GONE);
         mDurationTextView.setVisibility(View.GONE);
         mErrorTextView.setVisibility(View.GONE);
-        mRecyclerView.setLayoutManager(createGridLayoutManager());
 
-        mRecyclerView.setHasFixedSize(true);
-
+        mTrailersRecyclerView.setLayoutManager(createGridLayoutManager());
+        mTrailersRecyclerView.setHasFixedSize(true);
         mTrailersAdapter = new TrailersAdapter(this);
+        mTrailersRecyclerView.setAdapter(mTrailersAdapter);
 
-        mRecyclerView.setAdapter(mTrailersAdapter);
-
+        mReviewsRecyclerView.setLayoutManager(createGridLayoutManager());
+        mReviewsRecyclerView.setHasFixedSize(true);
+        mReviewsAdapter = new ReviewsAdapter();
+        mReviewsRecyclerView.setAdapter(mReviewsAdapter);
 
         Intent intentThatStartedThisActivity = getIntent();
 
@@ -141,8 +147,9 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
                     try {
                         String json = response.body().string();
                         mMovie = TheMovieDBJsonUtils.getMovieDetail(json);
-                        Trailer[] trailers = trailers = TheMovieDBJsonUtils.getTrailers(json);
-                        showMovieDetails(trailers);
+                        Trailer[] trailers = TheMovieDBJsonUtils.getTrailers(json);
+                        Review[] reviews = TheMovieDBJsonUtils.getReviews(json);
+                        showMovieDetails(trailers, reviews);
                     } catch (Exception e) {
                         Log.e(TAG, e.getMessage(), e);
                         onFailure(call, e);
@@ -175,7 +182,7 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         showErrorMessage(R.string.error_message_no_internet);
     }
 
-    private void showMovieDetails(Trailer[] trailers) {
+    private void showMovieDetails(Trailer[] trailers, Review[] reviews) {
 
         Picasso.with(this)
                 .load(mMovie.getPosterUrl())
@@ -188,6 +195,8 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         setDurationTextView();
 
         mTrailersAdapter.setTrailersData(trailers);
+        mReviewsAdapter.setReviewsData(reviews);
+
         mLoadingIndicator.setVisibility(View.GONE);
         mMovieDetailsView.setVisibility(View.VISIBLE);
 

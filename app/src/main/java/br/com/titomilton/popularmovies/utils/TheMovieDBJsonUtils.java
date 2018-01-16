@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import br.com.titomilton.popularmovies.Movie;
+import br.com.titomilton.popularmovies.Review;
 import br.com.titomilton.popularmovies.Trailer;
 
 public final class TheMovieDBJsonUtils {
@@ -19,15 +20,19 @@ public final class TheMovieDBJsonUtils {
     private static final String JSON_SYNOPSIS = "overview";
     private static final String JSON_RELEASE_DATE = "release_date";
     private static final String JSON_POSTER_PATH = "poster_path";
+    private static final String JSON_MOVIE_DURATION = "runtime";
 
     private static final String JSON_TRAILER_VIDEOS = "videos";
     private static final String JSON_TRAILER_RESULTS = "results";
     private static final String JSON_TRAILER_YOUTUBE_ID = "key";
     private static final String JSON_TRAILER_NAME = "name";
 
-    private static final String JSON_MOVIE_DURATION = "runtime";
+    private static final String JSON_REVIEWS = "reviews";
+    private static final String JSON_REVIEWS_RESULT = "results";
+    private static final String JSON_REVIEW_ID = "id";
+    private static final String JSON_REVIEW_AUTHOR = "author";
+    private static final String JSON_REVIEW_CONTENT = "content";
 
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
 
     public static Movie[] getMoviesStringsFromJson(String jsonMoviesResponse) throws JSONException {
         Movie[] parsedMoviesData;
@@ -94,6 +99,28 @@ public final class TheMovieDBJsonUtils {
         }
 
         return parsedTrailerData;
+    }
+
+    public static Review[] getReviews(String json) throws JSONException {
+        Review[] parsedReviewData;
+
+        JSONObject jsonObjRoot = new JSONObject(json);
+
+        checkErrorResponce(jsonObjRoot);
+        JSONObject jsonVideos = jsonObjRoot.getJSONObject(JSON_REVIEWS);
+        JSONArray jsonResults = jsonVideos.getJSONArray(JSON_REVIEWS_RESULT);
+        int totalResults = jsonResults.length();
+        parsedReviewData = new Review[totalResults];
+
+        for (int i = 0; i < totalResults; i++) {
+            JSONObject item = jsonResults.getJSONObject(i);
+            String id = item.getString(JSON_REVIEW_ID);
+            String author = item.getString(JSON_REVIEW_AUTHOR);
+            String content = item.getString(JSON_REVIEW_CONTENT);
+            parsedReviewData[i] = new Review(id, author, content);
+        }
+
+        return parsedReviewData;
     }
 
     public static Movie getMovieDetail(String json) throws JSONException {

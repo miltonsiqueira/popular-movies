@@ -137,19 +137,19 @@
                     android:id="@+id/tv_plot_synopsis"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
+                    android:textSize="15sp"
                     tools:text="Every child comes into the world full of promise, and none more so than Chappie: he is gifted, special, a prodigy. Like any child, Chappie will come under the influence of his surroundings—some good, some bad—and…"/>
 
                 <View
                     android:layout_width="fill_parent"
                     android:layout_height="1dip"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:background="@android:color/black"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/trailers"
                     android:textSize="20sp"/>
 
@@ -157,14 +157,27 @@
                     android:id="@+id/recycler_view_trailers"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"/>
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
                     android:layout_marginTop="8dp"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    tools:layout_editor_absoluteX="8dp"/>
+                    android:background="@android:color/black"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/reviews"
+                    android:textSize="20sp"/>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recycler_view_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"/>
+
             </LinearLayout>
 
         </android.support.constraint.ConstraintLayout>
