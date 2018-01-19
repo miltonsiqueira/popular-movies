@@ -11,4 +11,5 @@
     <string name="trailers">Trailers:</string>
     <string name="reviews">Reviews</string>
     <string name="by_favorited">By Favorited</string>
+    <string name="cannot_open_youtube">Cannot open Youtube</string>
 </resources>

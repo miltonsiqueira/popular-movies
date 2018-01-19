@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -23,12 +24,16 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 2;
     private static final int GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE = GRID_SPAN_COUNT_ORIENTATION_PORTRAIT * 2;
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String KEY_MOVIES_POSITION = "listState";
+//    public static final String KEY_MOVIES_POSITION = "moviesPosition";
 
     private RecyclerView mRecyclerView;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
     private MoviesAdapter mMoviesAdapter;
     private TextView mOrderDescription;
+    private TpMovieList mTpMovieList;
+    private Parcelable listState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +56,49 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadMoviesDataCheckIfConnected(TpMovieList.POPULAR);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mTpMovieList == null) {
+            mTpMovieList = TpMovieList.POPULAR;
+        }
+
+        loadMoviesDataCheckIfConnected();
+
+
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(TpMovieList.class.getSimpleName(), mTpMovieList.getId());
+        outState.putParcelable(KEY_MOVIES_POSITION, mRecyclerView.getLayoutManager().onSaveInstanceState());
+
+//        int position = 0;
+//        StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) mRecyclerView.getLayoutManager();
+//        layoutManager.getPosition()
+//        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+//        if (layoutManager != null) {
+//            position = layoutManager.
+//        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        getTpMovieList(savedInstanceState);
+        listState = savedInstanceState.getParcelable(KEY_MOVIES_POSITION);
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    private void getTpMovieList(Bundle savedInstanceState) {
+        int id = -1;
+        if (savedInstanceState != null) {
+           id = savedInstanceState.getInt(TpMovieList.class.getSimpleName());
+        }
+        mTpMovieList = TpMovieList.get(id);
     }
 
     @NonNull
@@ -65,24 +112,24 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         return layoutManager;
     }
 
-    private void loadMoviesDataCheckIfConnected (TpMovieList tpMovieList) {
+    private void loadMoviesDataCheckIfConnected () {
 
-        if (!tpMovieList.isDataFromRest() || NetworkUtils.isConnected(this)) {
-            loadMoviesData(tpMovieList);
+        if (!mTpMovieList.isDataFromRest() || NetworkUtils.isConnected(this)) {
+            loadMoviesData();
         } else {
             showErrorMessageNoInternet();
         }
 
     }
 
-    private void loadMoviesData(TpMovieList tpMovieList) {
+    private void loadMoviesData() {
 
-        mOrderDescription.setText(tpMovieList.getStringId());
+        mOrderDescription.setText(mTpMovieList.getStringId());
 
         showMoviesDataView();
         mLoadingIndicator.setVisibility(View.VISIBLE);
 
-        tpMovieList.getMovies(this, new TpMovieList.CallbackMovies() {
+        mTpMovieList.getMovies(this, new TpMovieList.CallbackMovies() {
             @Override
             public void get(Movie[] movies) {
                 onPostExecute(movies);
@@ -138,24 +185,23 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        final TpMovieList tpMovieList;
 
         switch (item.getItemId()) {
             case R.id.action_most_popular:
-                tpMovieList = TpMovieList.POPULAR;
+                mTpMovieList = TpMovieList.POPULAR;
                 break;
             case R.id.action_by_top_rated:
-                tpMovieList = TpMovieList.TOP_RATED;
+                mTpMovieList = TpMovieList.TOP_RATED;
                 break;
             case R.id.action_by_favorited:
-                tpMovieList = TpMovieList.FAVORITED;
+                mTpMovieList  = TpMovieList.FAVORITED;
                 break;
             default:
                 return super.onOptionsItemSelected(item);
 
         }
 
-        loadMoviesDataCheckIfConnected(tpMovieList);
+        loadMoviesDataCheckIfConnected();
 
         return true;
 
@@ -166,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         if (moviesData != null) {
             showMoviesDataView();
             mMoviesAdapter.setMoviesData(moviesData);
+            if (listState != null) {
+                mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
+            }
         } else {
             showErrorMessage();
         }

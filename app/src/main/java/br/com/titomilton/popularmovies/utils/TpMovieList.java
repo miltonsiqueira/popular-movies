@@ -15,7 +15,7 @@ import retrofit2.Retrofit;
 
 public enum TpMovieList {
 
-    POPULAR(R.string.by_most_popular, true) {
+    POPULAR(1, R.string.by_most_popular, true) {
         @Override
         public void getMovies(Context context, final CallbackMovies callbackMovies) {
             callRest(callbackMovies, this);
@@ -27,7 +27,7 @@ public enum TpMovieList {
         }
     },
 
-    TOP_RATED(R.string.by_most_popular, true) {
+    TOP_RATED(2, R.string.by_most_popular, true) {
         @Override
         public void getMovies(Context context, CallbackMovies callbackMovies) {
             callRest(callbackMovies, this);
@@ -39,7 +39,7 @@ public enum TpMovieList {
         }
     },
 
-    FAVORITED(R.string.by_favorited, false) {
+    FAVORITED(3, R.string.by_favorited, false) {
         @Override
         public void getMovies(final Context context, final CallbackMovies callbackMovies) {
             AsyncTask<Void, Void, Movie[]> task = new FavoriteMovieAsyncTask(context, callbackMovies);
@@ -53,10 +53,12 @@ public enum TpMovieList {
         }
     };
 
+    private final int id;
     private final int stringId;
     private final boolean isDataFromRest;
 
-    TpMovieList(int stringId, boolean isDataFromRest) {
+    TpMovieList(int id, int stringId, boolean isDataFromRest) {
+        this.id = id;
         this.stringId = stringId;
         this.isDataFromRest = isDataFromRest;
     }
@@ -93,12 +95,25 @@ public enum TpMovieList {
 
     }
 
+    public int getId() {
+        return id;
+    }
+
     public int getStringId() {
         return stringId;
     }
 
     public boolean isDataFromRest() {
         return isDataFromRest;
+    }
+
+    public static TpMovieList get(int id) {
+        for(TpMovieList tpMovie : TpMovieList.values()) {
+            if (tpMovie.getId() == id) {
+                return tpMovie;
+            }
+        }
+        return null;
     }
 
     public abstract Call<ResponseBody> endpoint(TheMovieDBAPI theMovieDBAPI);

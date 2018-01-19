@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +36,11 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     private static final String TAG = DetailActivity.class.getSimpleName();
     private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 1;
     private static final String YOUTUBE_URL_TEMPLATE = "http://www.youtube.com/watch?v=%s";
+    private static final String KEY_TRAILERS_POSITION = "trailersPosition";
+    private static final String KEY_REVIEWS_POSITION = "reviewsPosition";
+    private static final String KEY_DETAIL_SCROLL_VIEW_POSITION = "detailScrollViewPosition";
+    private Parcelable trailersState;
+    private Parcelable reviewsState;
     private TextView mTitleTextView;
     private TextView mReleaseDateTextView;
     private TextView mDurationTextView;
@@ -43,12 +50,14 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     private ImageView mPoster;
     private View mMovieDetailsView;
     private CheckBox mFavoriteCheckBox;
+    private ScrollView mDetailScrollView;
     private Movie mMovie;
     private RecyclerView mTrailersRecyclerView;
     private TrailersAdapter mTrailersAdapter;
     private ProgressBar mLoadingIndicator;
     private ReviewsAdapter mReviewsAdapter;
     private RecyclerView mReviewsRecyclerView;
+    private int detailScrollViewPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +76,7 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         mTrailersRecyclerView = findViewById(R.id.recycler_view_trailers);
         mReviewsRecyclerView = findViewById(R.id.recycler_view_reviews);
         mFavoriteCheckBox = findViewById(R.id.cb_favorite);
+        mDetailScrollView = findViewById(R.id.sv_detail);
 
         mFavoriteCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,15 +113,37 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
                 mMovieDetailsView.setVisibility(View.GONE);
                 mMovie = intentThatStartedThisActivity.getParcelableExtra(Intent.EXTRA_TEXT);
 
-                if (mMovie == null) {
-                    showErrorMessage();
-                } else {
-                    loadMovieDetailsCheckIfConnected();
-                }
-
-
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mMovie == null) {
+            showErrorMessage();
+        } else {
+
+            loadMovieDetailsCheckIfConnected();
+
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_TRAILERS_POSITION, mTrailersRecyclerView.getLayoutManager().onSaveInstanceState());
+        outState.putParcelable(KEY_REVIEWS_POSITION, mReviewsRecyclerView.getLayoutManager().onSaveInstanceState());
+        outState.putInt(KEY_DETAIL_SCROLL_VIEW_POSITION, mDetailScrollView.getScrollY());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        trailersState = savedInstanceState.getParcelable(KEY_TRAILERS_POSITION);
+        reviewsState = savedInstanceState.getParcelable(KEY_REVIEWS_POSITION);
+        detailScrollViewPosition = savedInstanceState.getInt(KEY_DETAIL_SCROLL_VIEW_POSITION);
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     private void unfavoriteMovie(Movie movie) {
@@ -159,6 +191,8 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
 
         if (NetworkUtils.isConnected(this)) {
             loadMovieDetails();
+
+
         } else {
             showErrorMessageNoInternet();
         }
@@ -240,6 +274,23 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         mLoadingIndicator.setVisibility(View.GONE);
         mMovieDetailsView.setVisibility(View.VISIBLE);
 
+        if (trailersState != null) {
+            mTrailersRecyclerView.getLayoutManager().onRestoreInstanceState(trailersState);
+        }
+        if (reviewsState != null) {
+            mReviewsRecyclerView.getLayoutManager().onRestoreInstanceState(reviewsState);
+        }
+
+        if (detailScrollViewPosition != 0) {
+
+            mDetailScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mDetailScrollView.scrollTo(0, detailScrollViewPosition);
+                }
+            });
+        }
+
     }
 
     private boolean isFavorite(Movie movie) {
@@ -271,7 +322,13 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     public void onClick(Trailer trailer) {
         try {
             String youtubeUrl = String.format(YOUTUBE_URL_TEMPLATE, trailer.getYoutubeId());
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl)));
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl));
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, R.string.cannot_open_youtube, Toast.LENGTH_SHORT)
+                        .show();
+            }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
             String errorMessage = "Error - " + e.getMessage();
