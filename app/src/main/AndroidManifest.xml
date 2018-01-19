@@ -26,6 +26,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+        <provider
+            android:name="br.com.titomilton.popularmovies.data.MovieProvider"
+            android:authorities="br.com.titomilton.popularmovies"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

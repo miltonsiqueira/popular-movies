@@ -6,9 +6,8 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -17,14 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
-import br.com.titomilton.popularmovies.utils.TheMovieDBAPI;
-import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
 import br.com.titomilton.popularmovies.utils.TpMovieList;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler{
 
@@ -49,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         mOrderDescription = findViewById(R.id.tv_order_description);
 
-        mRecyclerView.setLayoutManager(createGridLayoutManager());
+        mRecyclerView.setLayoutManager(createStaggeredGridLayoutManager());
 
         mRecyclerView.setHasFixedSize(true);
 
@@ -63,68 +55,47 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     @NonNull
-    private GridLayoutManager createGridLayoutManager() {
-        GridLayoutManager layoutManager;
+    private StaggeredGridLayoutManager createStaggeredGridLayoutManager() {
+        StaggeredGridLayoutManager layoutManager;
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT_ORIENTATION_PORTRAIT);
+            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_PORTRAIT, StaggeredGridLayoutManager.VERTICAL);
         } else {
-            layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE);
+            layoutManager = new StaggeredGridLayoutManager(GRID_SPAN_COUNT_ORIENTATION_LANDSCAPE, StaggeredGridLayoutManager.VERTICAL);
         }
         return layoutManager;
     }
 
     private void loadMoviesDataCheckIfConnected (TpMovieList tpMovieList) {
 
-        if (NetworkUtils.isConnected(this)) {
+        if (!tpMovieList.isDataFromRest() || NetworkUtils.isConnected(this)) {
             loadMoviesData(tpMovieList);
         } else {
             showErrorMessageNoInternet();
         }
+
     }
 
     private void loadMoviesData(TpMovieList tpMovieList) {
-        adjustOrderDescription(tpMovieList);
+
+        mOrderDescription.setText(tpMovieList.getStringId());
+
         showMoviesDataView();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(TheMovieDBAPI.BASE_URL)
-                .build();
-        TheMovieDBAPI theMovieDBAPI = retrofit.create(TheMovieDBAPI.class);
-
-        Call<ResponseBody> call = tpMovieList.endpoint(theMovieDBAPI);
         mLoadingIndicator.setVisibility(View.VISIBLE);
 
-        call.enqueue(new Callback<ResponseBody>() {
+        tpMovieList.getMovies(this, new TpMovieList.CallbackMovies() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Movie[] movies = null;
-                if (response.isSuccessful()) {
-                    try {
-                        String json = response.body().string();
-                        movies = TheMovieDBJsonUtils
-                                .getMoviesStringsFromJson(json);
-                    } catch (Exception e) {
-                        Log.e(TAG, e.getMessage(), e);
-                    }
-                }
+            public void get(Movie[] movies) {
                 onPostExecute(movies);
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                onPostExecute(null);
+            public void onFail(Throwable t) {
+                showErrorMessage(t.getMessage());
             }
         });
 
     }
 
-    private void adjustOrderDescription(TpMovieList tpMovieList) {
-        mOrderDescription.setText(
-                tpMovieList.equals(TpMovieList.POPULAR) ?
-                        R.string.by_most_popular :
-                        R.string.by_top_rated
-        );
-    }
 
     private void showMoviesDataView() {
         mErrorMessageDisplay.setVisibility(View.GONE);
@@ -140,8 +111,12 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     private void showErrorMessage(int resStringId) {
+        showErrorMessage(getResources().getString(resStringId));
+    }
+
+    private void showErrorMessage(String message) {
         mRecyclerView.setVisibility(View.GONE);
-        mErrorMessageDisplay.setText(resStringId);
+        mErrorMessageDisplay.setText(message);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
@@ -171,6 +146,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                 break;
             case R.id.action_by_top_rated:
                 tpMovieList = TpMovieList.TOP_RATED;
+                break;
+            case R.id.action_by_favorited:
+                tpMovieList = TpMovieList.FAVORITED;
                 break;
             default:
                 return super.onOptionsItemSelected(item);

@@ -1,6 +1,8 @@
 package br.com.titomilton.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +11,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -16,6 +19,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import br.com.titomilton.popularmovies.data.FavoriteMovieContract;
 import br.com.titomilton.popularmovies.utils.NetworkUtils;
 import br.com.titomilton.popularmovies.utils.TheMovieDBAPI;
 import br.com.titomilton.popularmovies.utils.TheMovieDBJsonUtils;
@@ -29,6 +33,7 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
 
     private static final String TAG = DetailActivity.class.getSimpleName();
     private static final int GRID_SPAN_COUNT_ORIENTATION_PORTRAIT = 1;
+    private static final String YOUTUBE_URL_TEMPLATE = "http://www.youtube.com/watch?v=%s";
     private TextView mTitleTextView;
     private TextView mReleaseDateTextView;
     private TextView mDurationTextView;
@@ -37,11 +42,11 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     private TextView mErrorTextView;
     private ImageView mPoster;
     private View mMovieDetailsView;
+    private CheckBox mFavoriteCheckBox;
     private Movie mMovie;
     private RecyclerView mTrailersRecyclerView;
     private TrailersAdapter mTrailersAdapter;
     private ProgressBar mLoadingIndicator;
-    private static final String YOUTUBE_URL_TEMPLATE = "http://www.youtube.com/watch?v=%s";
     private ReviewsAdapter mReviewsAdapter;
     private RecyclerView mReviewsRecyclerView;
 
@@ -61,6 +66,20 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         mPoster = findViewById(R.id.iv_poster_detail);
         mTrailersRecyclerView = findViewById(R.id.recycler_view_trailers);
         mReviewsRecyclerView = findViewById(R.id.recycler_view_reviews);
+        mFavoriteCheckBox = findViewById(R.id.cb_favorite);
+
+        mFavoriteCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mMovie != null) {
+                    if (mFavoriteCheckBox.isChecked()) {
+                        favoriteMovie(mMovie);
+                    } else {
+                        unfavoriteMovie(mMovie);
+                    }
+                }
+            }
+        });
 
         mLoadingIndicator.setVisibility(View.GONE);
         mDurationTextView.setVisibility(View.GONE);
@@ -95,6 +114,21 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
         }
     }
 
+    private void unfavoriteMovie(Movie movie) {
+        Uri uri = FavoriteMovieContract.FavoriteMovieEntry.getContentUriWithId(movie.getId());
+        getContentResolver().delete(uri, null, null);
+    }
+
+
+    private void favoriteMovie(Movie mMovie) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
+        contentValues.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_MOVIE_NAME, mMovie.getTitle());
+        contentValues.put(FavoriteMovieContract.FavoriteMovieEntry.COLUMN_MOVIE_POSTER_URL, mMovie.getPosterUrl());
+
+        getContentResolver().insert(FavoriteMovieContract.FavoriteMovieEntry.CONTENT_URI, contentValues);
+    }
+
     @NonNull
     private GridLayoutManager createGridLayoutManager() {
         GridLayoutManager layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT_ORIENTATION_PORTRAIT);
@@ -114,13 +148,14 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
     private void setDurationTextView() {
         if (mMovie.getDuration() != 0) {
             mDurationTextView.setVisibility(View.VISIBLE);
-            mDurationTextView.setText(mMovie.getDuration() + "min");
+            mDurationTextView.setText(
+                    getResources().getString(R.string.duration, mMovie.getDuration().toString()));
         } else {
             mDurationTextView.setVisibility(View.GONE);
         }
     }
 
-    private void loadMovieDetailsCheckIfConnected () {
+    private void loadMovieDetailsCheckIfConnected() {
 
         if (NetworkUtils.isConnected(this)) {
             loadMovieDetails();
@@ -147,6 +182,8 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
                     try {
                         String json = response.body().string();
                         mMovie = TheMovieDBJsonUtils.getMovieDetail(json);
+
+
                         Trailer[] trailers = TheMovieDBJsonUtils.getTrailers(json);
                         Review[] reviews = TheMovieDBJsonUtils.getReviews(json);
                         showMovieDetails(trailers, reviews);
@@ -184,13 +221,16 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
 
     private void showMovieDetails(Trailer[] trailers, Review[] reviews) {
 
+        boolean isFavorite = isFavorite(mMovie);
+
         Picasso.with(this)
                 .load(mMovie.getPosterUrl())
                 .into(mPoster);
 
+        mFavoriteCheckBox.setChecked(isFavorite);
         mTitleTextView.setText(mMovie.getTitle());
         setReleaseDate();
-        mVoteAverageTextView.setText(mMovie.getVoteAverage());
+        setVoteAverageTextView();
         mSynopsis.setText(mMovie.getSynopsis());
         setDurationTextView();
 
@@ -202,6 +242,31 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
 
     }
 
+    private boolean isFavorite(Movie movie) {
+
+        Uri uri = FavoriteMovieContract.FavoriteMovieEntry.getContentUriWithId(movie.getId());
+
+        String[] projection = FavoriteMovieContract.FavoriteMovieEntry.ALL_COLUMNS;
+
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+
+        try {
+            if (cursor.moveToNext()) {
+                return true;
+            } else {
+                return false;
+            }
+        } finally {
+            cursor.close();
+        }
+
+    }
+
+    private void setVoteAverageTextView() {
+        mVoteAverageTextView.setText(
+                getResources().getString(R.string.vote_average, mMovie.getVoteAverage()));
+    }
+
     @Override
     public void onClick(Trailer trailer) {
         try {
@@ -209,7 +274,7 @@ public class DetailActivity extends AppCompatActivity implements TrailersAdapter
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeUrl)));
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
-            String errorMessage = "Error - " +  e.getMessage();
+            String errorMessage = "Error - " + e.getMessage();
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT)
                     .show();
         }

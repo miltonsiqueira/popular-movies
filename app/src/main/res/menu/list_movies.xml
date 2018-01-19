@@ -6,4 +6,7 @@
     <item android:id="@+id/action_by_top_rated"
           android:orderInCategory="2"
           android:title="@string/by_top_rated"/>
+    <item android:id="@+id/action_by_favorited"
+          android:orderInCategory="2"
+          android:title="@string/by_favorited"/>
 </menu>
